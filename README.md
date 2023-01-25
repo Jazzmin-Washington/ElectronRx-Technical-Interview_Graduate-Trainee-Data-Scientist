@@ -41,17 +41,19 @@ therapeutic intervention opportunities (Sadad et al, 2022, and Georgieva-Tsaneva
  
 This project will focus on identifying atrial fibrillation. Based on previous studies, Tree-Based Algorithms, Support Vector Machines, and Neural Networks/Deep Learning would be the most beneficial in designing an Algorithm (Priyadarshini et al, 2021, Georgieva-Tsaneva et al, 2022, Huang et al, 2022). More specifically, when analysing whether pulse wave present atrial fibrillation there are three steps:
 1. Feature extraction - one or more features from each pulse wave is needed to produce a time series of measurements. 
-- Interbeat Intervals and Pulse Amplitudes are commonly used. 
-- Heart Rate Variability - Measures Interbeat Intervals (IBI) over time but it is important to also remove any outliers and ectopic beats for all features. 
-  - Outlier Removal Method: comparing consecutive IBIs and ensuring they have a normal-to-normal ratios.
+    - Interbeat Intervals and Pulse Amplitudes are commonly used. 
+    - Heart Rate Variability - Measures Interbeat Intervals (IBI) over time but it is important to also remove any outliers and ectopic beats for all features. 
+    - Outlier Removal Method: comparing consecutive IBIs and ensuring they have a normal-to-normal ratios.
+ 
 2. Calculate Summary Statistics - Statistics such as mean value of the time series or variability such as standard deviation. 
-- Typically these can be linear or nonlinear
--Poincare plot is most often used
+    - Typically these can be linear or nonlinear
+    - Poincare plot is most often used
+  
 3. Classification: Pulse waves are classified as sinus rhythm or atrial fibrillation. 
-- Traditional statistical methods can be used such as pre-specified thresholds or a logistic regression models
-- Other more computational methods can also be used such as Time Domain Analysis, Frequency Domain Analysis, Time-Frequency Analysis and Machine Learning. 
-  - Previous studies provided great results with Support Vector Machines, Tree-Based Algorithms, CNN-LSTM, and other deep learning models. 
-      - With Machine Learning , deep learning can be used to classify a segment of PPG signals directly as an input/feature to the model. Accelerometry data can be used in cases of small sample size. The model is then fine-tuned or transfer learning techniques can be used. 
+    - Traditional statistical methods can be used such as pre-specified thresholds or a logistic regression models
+    - Other more computational methods can also be used such as Time Domain Analysis, Frequency Domain Analysis, Time-Frequency Analysis and Machine Learning. 
+      - Previous studies provided great results with Support Vector Machines, Tree-Based Algorithms, CNN-LSTM, and other deep learning models. 
+        - With Machine Learning , deep learning can be used to classify a segment of PPG signals directly as an input/feature to the model. Accelerometry data can be used in cases of small sample size. The model is then fine-tuned or transfer learning techniques can be used. 
  -------------------------------------------------------------------------------------------------------------
  #### Additional Reading to be Completed:
  - L. M. Eerikainen ¨ et al., “Atrial fibrillation monitoring with wrist-worn photoplethysmography-based wearables: State-of-the-art review,” Cardiovascular Digital Health Journal, vol. 1, no. 1, pp. 45–51, 2020. https://doi.org/10.1016/j.cvdhj.2020.03.001  
