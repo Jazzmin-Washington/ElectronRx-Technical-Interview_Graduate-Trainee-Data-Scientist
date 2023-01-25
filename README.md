@@ -57,13 +57,10 @@ This project will focus on identifying atrial fibrillation. Based on previous st
  -------------------------------------------------------------------------------------------------------------
  #### Additional Reading to be Completed:
  - L. M. Eerikainen ¨ et al., “Atrial fibrillation monitoring with wrist-worn photoplethysmography-based wearables: State-of-the-art review,” Cardiovascular Digital Health Journal, vol. 1, no. 1, pp. 45–51, 2020. https://doi.org/10.1016/j.cvdhj.2020.03.001  
-
 - S.-C. Tang et al., “Identification of atrial fibrillation by quantitative analyses of fingertip photoplethysmogram,” Scientific Reports, vol. 7, no. 1, p. 45644, 2017. https://doi.org/10.1038/srep45644 
-
-- T. Pereira et al., “Photoplethysmography based atrial fibrillation detection: a review,” npj Digital Medicine, vol. 3, no. 1, p. 3, 2020. https://doi.org/10.1038/s41746-019-0207-9 [212] P. H. Charlton, “Detecting atrial fibrillation from the photoplethysmogram,” 2021. https://commons.wikimedia.org/wiki/File:Detecting atrial fibrillation (AF) from the photoplethysmogram (PPG).svg  
-
+- T. Pereira et al., “Photoplethysmography based atrial fibrillation detection: a review,” npj Digital Medicine, vol. 3, no. 1, p. 3, 2020. https://doi.org/10.1038/s41746-019-0207-9 
+- P. H. Charlton, “Detecting atrial fibrillation from the photoplethysmogram,” 2021. https://commons.wikimedia.org/wiki/File:Detecting atrial fibrillation (AF) from the photoplethysmogram (PPG).svg  
 - M. V. Perez et al., “Large-scale assessment of a smartwatch to identify atrial fibrillation,” New England Journal of Medicine, vol. 381, no. 20, pp. 1909–1917, 2019. https://doi.org/10.1056/NEJMoa1901183  
-
 - Y. Guo et al., “Mobile photoplethysmographic technology to detect atrial fibrillation,” Journal of the American College of Cardiology, vol. 74, no. 19, pp. 2365–2375, 2019. https://doi.org/10.1016/j.jacc.2019.08.019  
 
   
