@@ -1,29 +1,97 @@
 #%%
-# Preprocessing Signals
-
-import pandas as pd
+import dataclasses
+from typing import Literal, Optional
+import numpy as np
+import scipy.interpolate
+from scipy.signal import savgol_filter, cspline1d, cspline1d_eval
 import heartpy as hp
-import neurokit2 as nk
+import pandas as pd
 import matplotlib.pyplot as plt
-import openpyxl
-import seaborn as sns
+
+def cubic_spine_interpolaton(data):
+    time = np.linspace(0, len(data))
+    filtered_eval = cspline1d_eval(
+                cspline1d(data), time)
+
+    filtered = cspline1d(data)
+    
+    return filtered
+    
 
 
+def butter_lowpass_filter(data, 
+                        sample_rate, 
+                        lowcut = 4, 
+                        order = 3):
+    nyq = 0.5 * sample_rate
+    low = lowcut / nyq
+    #high = highcut / nyq
+    b, a = scipy.signal.butter(order, [low], btype='low')
+    y = scipy.signal.filtfilt(b, a, data)
+    
+    return y
+    
+def visualize(data,results):
+    plt.figure(figsize=(12,12))
+    plt.subplot(211)
+    plt.plot(Red1[0:int(5 * sample_rate)])
+    plt.title('original signal')
+    plt.subplot(212)
+    plt.plot(results[0:int(5 * sample_rate)])
+    plt.title('filtered signal')
+    plt.show()
 
-ppg_db_1 = pd.read_excel('full_raw_ppg_data.xlsx', sheet_name = 'ppg_db_1')
+    plt.figure(figsize=(12,6))
+    plt.subplot(211)
+    plt.plot(Red1[0:int(sample_rate * 15)])
+    plt.title('15 second segment of unfiltered signal')
+    plt.show()
+    plt.figure(figsize=(12,6))
+    plt.subplot(212)
+    plt.plot(results[0:int(sample_rate * 15)])
+    plt.title('15 second segment of filtered signal')
+    plt.show()
 
-figure, axis = plt.subplots(3, 1, sharey=True)
+def preprocess(data:[np.array],
+                sample_rate:[int],
+                butter_lowcut:[float] = 4,
+                butter_order:[int] = 3,
+                poly_order:[int] = 4,
+                window_length:[int] = 101):
 
-axis[0, 1].plot[ppg_db_1['Red'].values]
-axis[0, 1].set_title('Red PPG Waves')
+    nans = np.isnan(data)
+    if np.any(nans):
+        raise RuntimeError(
+            "Cannot preprocess data containing NaN values. "
+            f"First NaN found at index {nans.nonzero()[0][0]}."
+        )
+    result = cubic_spine_interpolaton(data)
 
-axis[0, 2].plot[ppg_db_1['Green'].values]
-axis[0, 2].set_title('Green PPG Waves')
+    result = butter_lowpass_filter(data = result,
+                                    sample_rate = sample_rate,
+                                    lowcut = butter_lowcut,
+                                    order = butter_order)
+    
+    smoothdata = savgol_filter(result,polyorder=poly_order, window_length=window_length)
+    filtered= Red1-smoothdata
+    
+    return filtered
 
-axis[0, 3].plot[ppg_db_1['Blue'].values]
-axis[0, 3].set_title('Blue PPG Waves')
+if __name__ == "__main__":
+    os.chdir('/home/jazzy/Documents/PPS-Project')
+    ppg_db_1 = pd.read_excel('full_raw_ppg_data.xlsx', sheet_name = 'ppg_db_1')
+    ppg_db_1['time2'] = ppg_db_1['time'] * 1000
+    Red1 = ppg_db_1['Red'].values
+    Green1 = ppg_db_1['Green'].values
+    Blue1 = ppg_db_1['Blue'].values
+    time = ppg_db_1['time'].values
+    timer = ppg_db_1['time2'].values
 
-plt.show()
+    sample_rate = hp.get_samplerate_mstimer(timer)
+    print(sample_rate)
+    filtereddata = preprocess(data = Red1, 
+                        sample_rate = sample_rate)
 
+    visualize(data = Red1, results=filtereddata)
 
 # %%
