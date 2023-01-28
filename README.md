@@ -6,7 +6,7 @@ or deviation from the baseline of the overall pattern provides invaluable diagno
 therapeutic intervention opportunities.
 
 _________________________________________________________________________________________________________________
-## Day 1 - Research - Review of Literature
+Research - Summary of Literature
 - The first step in the process is to research previous cadiac studies using photoplethysmography and the methods previous studies used for analysis, 
 
 Summary of PPG: PPG values are generally transmitted from Wearable Patient Monitoring via mobile and web applications. PPG is advantageous as it eliminates many issues such as invasive procedures typical of continuous monitoring and uncomfortable non-continuous cuff-based readings. PPG uses human skin vessels to find changes in light transmitted or reflected through photoelectric sensors providing different aspects of cardiac survellienve including: 
