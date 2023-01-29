@@ -152,6 +152,7 @@ def preprocess_all_channels(file, dataframe, visualise:bool = False):
             data = dataframe[columns].values
             filtereddata = preprocess(data = data, 
                         sample_rate = sample_rate)
+            filtered_ppg[columns] = filtereddata
         
 
             
