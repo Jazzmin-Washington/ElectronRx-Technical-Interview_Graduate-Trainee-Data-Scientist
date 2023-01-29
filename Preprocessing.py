@@ -3,7 +3,7 @@ import dataclasses
 from typing import Literal, Optional
 import numpy as np
 import scipy.interpolate
-from scipy.signal import savgol_filter, cspline1d, cspline1d_eval,detrend, butter, cheby2, sosfilt
+from scipy.signal import savgol_filter, cspline1d, medfilt, cspline1d_eval,detrend, butter, cheby2, sosfilt
 from numpy import repeat
 import heartpy as hp
 import pandas as pd
@@ -77,10 +77,14 @@ def visualize(data,results, sample_rate):
 
 def preprocess(data:[np.array],
                 sample_rate:[int],
+                moving_average = True,
+                butter = True,
                 butter_lowcut:[int] = 4,
                 butter_order:[int] = 3,
+                trendline = True,
                 sd_poly_order:[int] = 4,
                 sg_window_length:[int] = 101,
+                cheby2 = False,
                 cheby_order = 4,
                 cheby_band = [0.5, 6]):
 
@@ -94,20 +98,26 @@ def preprocess(data:[np.array],
     
     #result = moving_average_filter(data)
     result = detrend(data)
-    result= hp.remove_baseline_wander(result, sample_rate = sample_rate)
+    if trendline == True:
+        result= hp.remove_baseline_wander(result, sample_rate = sample_rate)
+
     result = cubic_spine_interpolaton(result)
 
+    if moving_average_filter == True:
+        result = moving_average_filter(result)
 
-    result = butter_lowpass_filter(data = result,
-                                  sample_rate = sample_rate,
-                                 lowcut = butter_lowcut)
-
-    #result = cheby2_filter(result, sample_rate=sample_rate, order=4)
+    if butter == True:    
+        result = butter_lowpass_filter(data = result,
+                                    sample_rate = sample_rate,
+                                    lowcut = butter_lowcut)
+    if cheby2 == True:
+        result = cheby2_filter(result, sample_rate=sample_rate, order=4)
 
                            
     
-    smoothdata = savgol_filter(result,polyorder= sd_poly_order, window_length= sg_window_length)
-    filtered= data-smoothdata
+    smoothdata = savgol_filter(result,polyorder=sd_poly_order, 
+                                    window_length= sg_window_length)
+    result = data-smoothdata
     
     
     
@@ -119,18 +129,31 @@ def preprocess_all_channels(file, dataframe, visualise:bool = False):
     sample_rate = hp.get_samplerate_mstimer(timer)
     print(sample_rate)
     filtered_ppg = pd.DataFrame()
-    filtered_ppg['sample_rate'] = sample_rate
     filtered_ppg['time'] = dataframe['time']
+    filtered_ppg['sample_rate'] = sample_rate
+    
 
     for columns in dataframe:
         if columns == 'time':
             pass
-        else:
+        elif columns == 'Green' and file == '2022-06-07 09-15-58.csv':
+                data = dataframe[columns].values
+                data = hp.flip_signal(data, keep_range=True)
+                filtereddata = preprocess(data = data, 
+                        sample_rate = sample_rate)
+                filtered_ppg[columns] = filtereddata
+        elif columns == 'Blue':
             data = dataframe[columns].values
-            print(data[0:5])
+            filtereddata = preprocess(data = data, 
+                        sample_rate = sample_rate, moving_average=False,
+                        trendline=False)
+            filtered_ppg[columns] = filtereddata
+        elif columns == 'Red':
+            data = dataframe[columns].values
             filtereddata = preprocess(data = data, 
                         sample_rate = sample_rate)
-            filtered_ppg[columns] = filtereddata
+        
+
             
     
     filtered_ppg.to_csv(f'/home/jazzy/Documents/PPS-Project/Filtered_PPG/filtered_{filename}')
@@ -146,36 +169,35 @@ def preprocess_all_channels(file, dataframe, visualise:bool = False):
         Filtered_Blue = filtered_ppg['Blue']
 
         fig,axs = plt.subplots(3,2)
-        axs[0, 0].plot(Red[1500:1500+int(10 * sample_rate)], label = 'Red Channel')
+        axs[0, 0].plot(Red[1500:1500+int(10 * sample_rate)], c = '#E66100', label = 'Red Channel')
         axs[0, 0].set_title('Unfiltered Red Signal')
-        axs[0, 1].plot(Filtered_Red[1500:1500+int(10 * sample_rate)], label = 'Red Channel')
+        axs[0, 1].plot(Filtered_Red[1500:1500+int(10 * sample_rate)],c ='#E66100', label = 'Red Channel')
         axs[0, 1].set_title('Filtered Red Signal')
-        axs[1, 0].plot(Green[1500:1500+int(10* sample_rate)], label = 'Green Channel')
+        axs[1, 0].plot(Green[1500:1500+int(10* sample_rate)], c ='#40B0A6', label = 'Green Channel')
         axs[1, 0].set_title('Unfiltered Green Signal')
-        axs[1, 1].plot(Filtered_Green[1500:1500+int(10 * sample_rate)], label = 'Green Channel')
+        axs[1, 1].plot(Filtered_Green[1500:1500+int(10 * sample_rate)],c ='#40B0A6', label = 'Green Channel')
         axs[1, 1].set_title('Filtered Green Signal')
-        axs[2, 0].plot(Blue[1500:1500+int(5 * sample_rate)], label= 'Blue Channel')
+        axs[2, 0].plot(Blue[1500:1500+int(5 * sample_rate)],c = '#1A85FF', label= 'Blue Channel')
         axs[2, 0].set_title('Unfiltered Blue Signal')
-        axs[2, 1].plot(Filtered_Blue[0:1500+int(5 * sample_rate)], label = 'Blue Channel')
+        axs[2, 1].plot(Filtered_Blue[0:1500+int(5 * sample_rate)],c = '#1A85FF' , label = 'Blue Channel')
         axs[2, 1].set_title('Unfiltered Blue Signal')
         for ax in axs.flat:
             ax.set(xlabel='PPG Signal', ylabel='Frequency (Hz)')
             ax.label_outer()
         
-        fig.set_figheight(20)
-        fig.set_figwidth(20)
+        fig.set_figheight(24)
+        fig.set_figwidth(24)
 
-        plt.tight_layout()
+        plt.autoscale()
+        plt.savefig(f'/home/jazzy/Documents/PPS-Project/Filtered_PPG/cb_{filename}.png', dpi='figure', format = 'png')
         plt.show()
-        plt.savefig(f'/home/jazzy/Documents/PPS-Project/Filtered_PPG/{filename.strip('.csv')}', dpi='figure', format = 'png')
+        filename = filename.strip('.csv')
         
-
-    
-    
+        
 
 if __name__ == "__main__":
     os.chdir('/home/jazzy/Documents/PPS-Project/Raw_PPG_Files')
-    for files in os.list_dir():
+    file = '2022-06-07 09-15-58.csv'
     dataframe = pd.read_csv(file, index_col=0)
     preprocess_all_channels(file, dataframe, visualise=True)
 # %%
