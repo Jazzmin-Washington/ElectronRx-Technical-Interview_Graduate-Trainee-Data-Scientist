@@ -3,7 +3,7 @@ import dataclasses
 from typing import Literal, Optional
 import numpy as np
 import scipy.interpolate
-from scipy.signal import savgol_filter, cspline1d, medfilt, cspline1d_eval,detrend, butter, cheby2, sosfilt
+from scipy.signal import savgol_filter,  morlet, cspline1d, filtfilt, cspline1d_eval,detrend, butter, cheby2, sosfilt
 from numpy import repeat
 import heartpy as hp
 import pandas as pd
@@ -51,7 +51,7 @@ def cheby2_filter(data,
     sos = cheby2(order,20, band, 'band', 
                         fs = sample_rate,output='sos',
                         analog=False)
-    filtered = sosfilt(sos, data)
+    filtered = filtfilt(sos, data)
     return filtered
     
 def visualize(data,results, sample_rate):
@@ -82,6 +82,7 @@ def preprocess(data:[np.array],
                 butter_lowcut:[int] = 4,
                 butter_order:[int] = 3,
                 trendline = True,
+                trend_cut = 0.05,
                 sd_poly_order:[int] = 4,
                 sg_window_length:[int] = 101,
                 cheby2 = False,
@@ -99,12 +100,10 @@ def preprocess(data:[np.array],
     #result = moving_average_filter(data)
     result = detrend(data)
     if trendline == True:
-        result= hp.remove_baseline_wander(result, sample_rate = sample_rate)
-
+        result = hp.remove_baseline_wander(result, sample_rate, cutoff = trend_cut)
     result = cubic_spine_interpolaton(result)
 
-    if moving_average_filter == True:
-        result = moving_average_filter(result)
+    #result = morlet(len(result), w = 6, complete=True)
 
     if butter == True:    
         result = butter_lowpass_filter(data = result,
@@ -115,12 +114,9 @@ def preprocess(data:[np.array],
 
                            
     
-    smoothdata = savgol_filter(result,polyorder=sd_poly_order, 
-                                    window_length= sg_window_length)
-    result = data-smoothdata
-    
-    
-    
+    #smoothdata = savgol_filter(result,polyorder=sd_poly_order, 
+                                    #window_length= sg_window_length)
+    #result = data-smoothdata
     return result
     
 def preprocess_all_channels(file, dataframe, visualise:bool = False):
@@ -136,22 +132,12 @@ def preprocess_all_channels(file, dataframe, visualise:bool = False):
     for columns in dataframe:
         if columns == 'time':
             pass
-        elif columns == 'Green' and file == '2022-06-07 09-15-58.csv':
-                data = dataframe[columns].values
-                data = hp.flip_signal(data, keep_range=True)
-                filtereddata = preprocess(data = data, 
-                        sample_rate = sample_rate)
-                filtered_ppg[columns] = filtereddata
-        elif columns == 'Blue':
+        
+        else:
             data = dataframe[columns].values
             filtereddata = preprocess(data = data, 
-                        sample_rate = sample_rate, moving_average=False,
-                        trendline=False)
+                        sample_rate = sample_rate)
             filtered_ppg[columns] = filtereddata
-        elif columns == 'Red':
-            data = dataframe[columns].values
-            filtereddata = preprocess(data = data, 
-                        sample_rate = sample_rate)
         
 
             
@@ -164,31 +150,30 @@ def preprocess_all_channels(file, dataframe, visualise:bool = False):
         Green = dataframe['Green']
         Blue = dataframe['Blue']
 
+        
+
         Filtered_Red =  filtered_ppg['Red']
         Filtered_Green = filtered_ppg['Green']
         Filtered_Blue = filtered_ppg['Blue']
 
+        Filtered_Green = hp.flip_signal(Filtered_Green)
+        Filtered_Red = hp.flip_signal(Filtered_Red)
+        #Filtered_Blue = hp.flip_signal(Filtered_Blue)
+
         fig,axs = plt.subplots(3,2)
-        axs[0, 0].plot(Red[1500:1500+int(10 * sample_rate)], c = '#E66100', label = 'Red Channel')
-        axs[0, 0].set_title('Unfiltered Red Signal')
-        axs[0, 1].plot(Filtered_Red[1500:1500+int(10 * sample_rate)],c ='#E66100', label = 'Red Channel')
+        axs[0, 0].plot(Red[1500:1500+int(5 * sample_rate)], c = '#d55e00', label = 'Red Channel')
+        axs[0, 0].set_title('Unfiltered Signals')
+        axs[0, 1].plot(Filtered_Red[1500:1500+int(5 * sample_rate)],c ='#d55e00', label = 'Red Channel')
         axs[0, 1].set_title('Filtered Red Signal')
-        axs[1, 0].plot(Green[1500:1500+int(10* sample_rate)], c ='#40B0A6', label = 'Green Channel')
-        axs[1, 0].set_title('Unfiltered Green Signal')
-        axs[1, 1].plot(Filtered_Green[1500:1500+int(10 * sample_rate)],c ='#40B0A6', label = 'Green Channel')
-        axs[1, 1].set_title('Filtered Green Signal')
-        axs[2, 0].plot(Blue[1500:1500+int(5 * sample_rate)],c = '#1A85FF', label= 'Blue Channel')
-        axs[2, 0].set_title('Unfiltered Blue Signal')
-        axs[2, 1].plot(Filtered_Blue[0:1500+int(5 * sample_rate)],c = '#1A85FF' , label = 'Blue Channel')
-        axs[2, 1].set_title('Unfiltered Blue Signal')
+        axs[1, 0].plot(Green[1500:1500+int(5* sample_rate)], c ='#009e73', label = 'Green Channel')
+        axs[1, 1].plot(Filtered_Green[1500:1500+int(5 * sample_rate)],c ='#009e73', label = 'Green Channel')
+        axs[2, 0].plot(Blue[1500:1500+int(5 * sample_rate)],c = '#0072b2', label= 'Blue Channel')
+        axs[2, 1].plot(Filtered_Blue[1500:1500+int(5 * sample_rate)],c = '#0072b2' , label = 'Blue Channel')
         for ax in axs.flat:
             ax.set(xlabel='PPG Signal', ylabel='Frequency (Hz)')
             ax.label_outer()
-        
-        fig.set_figheight(24)
-        fig.set_figwidth(24)
 
-        plt.autoscale()
+        
         plt.savefig(f'/home/jazzy/Documents/PPS-Project/Filtered_PPG/cb_{filename}.png', dpi='figure', format = 'png')
         plt.show()
         filename = filename.strip('.csv')
@@ -197,7 +182,7 @@ def preprocess_all_channels(file, dataframe, visualise:bool = False):
 
 if __name__ == "__main__":
     os.chdir('/home/jazzy/Documents/PPS-Project/Raw_PPG_Files')
-    file = '2022-06-07 09-15-58.csv'
+    file = '2022-06-14_12-55-43.csv'
     dataframe = pd.read_csv(file, index_col=0)
     preprocess_all_channels(file, dataframe, visualise=True)
 # %%
