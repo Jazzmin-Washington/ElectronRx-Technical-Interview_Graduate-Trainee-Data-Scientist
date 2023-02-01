@@ -242,16 +242,14 @@ def analyse_all_channels(file, dataframe, sample_rate):
 if __name__ == "__main__":
     writer = pd.ExcelWriter('full_raw_ppg_data.xlsx', engine = "xlsxwriter")
     os.chdir('/home/jazzy/Documents/PPS-Project/Filtered_PPG')
-    file_name = 'full_raw_ppg_data.xlsx'
-    ppg_signals = pd.read_csv(file_name)
-    file_name = file_name.strip('.csv')
-    sample_rate = ppg_signals['sample_rate'][0]
-    print(sample_rate)
-    for column in ['Red', 'Green', 'Blue']:
-        print(column)
-        analyse = analyze(ppg_signals[column], sample_rate=int(sample_rate))
-        print(analyse)
-        analyse.to_excel(f'/home/jazzy/Documents/PPS-Project/Analysis/{column}_{file_name}.xlsx')
+    for file in os.listdir():
+        if ".csv" in file and ".png" not in file:
+            ppg_signals = pd.read_csv(file)
+            filename = file.strip('.csv').strip('filtered_')
+            sample_rate=100
+            for column in ['Red', "Green", 'Blue']:
+                analyse = analyze(ppg_signals[column], sample_rate=int(sample_rate))
+                analyse.to_csv(f'/home/jazzy/Documents/PPS-Project/Analysis/HeartRate_{filename}_{column}.csv')
 
 
 
